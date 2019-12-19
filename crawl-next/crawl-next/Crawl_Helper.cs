@@ -16,6 +16,12 @@ namespace crawl_next
         internal const string tagsUrl = "https://stackoverflow.com/tags?page=1&tab=popular";
         internal const string questionsUrl = "https://stackoverflow.com/questions/tagged/{0}?tab={1}&page={2}&pagesize={3}";
         internal const string baseUrl = "https://stackoverflow.com";
+        internal const string questionPostUrl = "https://stackoverflow.com{0}?page={1}&tab=votes#tab-top";
+
+        static DataContext db = new DataContext();
+        // Instantiate the regular expression object.
+        static Regex r = new Regex(@"^\/questions\/(\d*/)(\w*-*)*", RegexOptions.IgnoreCase);
+
         public static List<string> getTags()
         {
             HtmlWeb web = new HtmlWeb();
@@ -58,18 +64,14 @@ namespace crawl_next
             return questionUrl;
         }
 
-        public static void getQuestionDetials(string url)
+        public static void getQuestionDetials(string url,int callstack=0)
         {
-            DataContext db = new DataContext();
-            // Instantiate the regular expression object.
-            Regex r = new Regex(@"^\/questions\/(\d*/)(\w*-*)*", RegexOptions.IgnoreCase);
-
-
-            if (!db.documents.Any(x => x.url == url))
+            if (!db.documents.Any(x => x.url == url)&& callstack<100)
             {
                 HtmlWeb web = new HtmlWeb();
                 HtmlDocument htmlDoc = web.Load(url);
                 var node = htmlDoc.GetElementbyId("content");
+                htmlDoc = null;
 
                 Console.WriteLine(" Going to get " + url);
 
@@ -84,7 +86,7 @@ namespace crawl_next
                         {
                             if (r.IsMatch(nodeAtt.Value))
                             {
-                                getQuestionDetials(baseUrl + r.Matches(nodeAtt.Value)[0]);
+                                getQuestionDetials(baseUrl + r.Matches(nodeAtt.Value)[0], callstack++);
                             }
                         }
                     }
@@ -115,5 +117,7 @@ namespace crawl_next
             }
             return data;
         }
+
+
     }
 }
