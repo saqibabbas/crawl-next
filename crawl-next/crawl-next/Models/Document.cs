@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
 namespace crawl_next.Models
 {
@@ -13,6 +9,11 @@ namespace crawl_next.Models
         public string url { get; set; }
 
         public string html { get; set; }
+                
+        public int? mainDocumentId { get; set; }
+        
+        [ForeignKey("mainDocumentId")]
+        public MainDocument mainDocument { get; set; }
 
     }
 }

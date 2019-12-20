@@ -16,5 +16,7 @@ namespace crawl_next.Data_Context
         }
 
         public DbSet<Document> documents { get; set; }
+
+        public DbSet<MainDocument> mainDocuments { get; set; }
     }
 }

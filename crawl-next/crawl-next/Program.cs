@@ -40,9 +40,9 @@ namespace crawl_next
             foreach (HtmlNode node1 in node.SelectNodes("//*[@class=\"pager-answers\"]/span[contains(@class, 'page-number')]"))
             {
                 Console.WriteLine(node1.InnerHtml);
-
             }
 
         }
     }
+
 }

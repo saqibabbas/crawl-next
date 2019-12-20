@@ -64,14 +64,16 @@ namespace crawl_next
             return questionUrl;
         }
 
-        public static void getQuestionDetials(string url,int callstack=0)
+        public static void getQuestionDetials(string url, int callstack = 0)
         {
-            if (!db.documents.Any(x => x.url == url)&& callstack<100)
+            if (!db.documents.Any(x => x.url == url) && callstack < 100)
             {
                 HtmlWeb web = new HtmlWeb();
                 HtmlDocument htmlDoc = web.Load(url);
-                var node = htmlDoc.GetElementbyId("content");
+                HtmlNode node = htmlDoc.GetElementbyId("content");
                 htmlDoc = null;
+
+                List<int> pages = getPagination(node);
 
                 Console.WriteLine(" Going to get " + url);
 
@@ -93,6 +95,12 @@ namespace crawl_next
                 }
             }
         }
+
+        public static void getPaginationData()
+        {
+
+        }
+
 
         public static string getDataFormUrl(string urlAddress)
         {
@@ -118,6 +126,19 @@ namespace crawl_next
             return data;
         }
 
-
+        public static List<int> getPagination(HtmlNode node)
+        {
+            List<int> paging = new List<int>();
+            int pag = 0;
+            foreach (HtmlNode node1 in node.SelectNodes("//*[@class=\"pager-answers\"]/span[contains(@class, 'page-number')]"))
+            {
+                if (int.TryParse(node1.InnerText, out pag))
+                {
+                    paging.Add(pag);
+                }
+            }
+            paging = paging.Where(x => x > 1).Distinct().ToList();
+            return paging;
+        }
     }
 }
