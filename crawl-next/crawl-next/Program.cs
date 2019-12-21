@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using crawl_next.Data_Context;
 using HtmlAgilityPack;
 
 namespace crawl_next
@@ -13,30 +14,35 @@ namespace crawl_next
     {
         static void Main(string[] args)
         {
-            startCrawlerasync();
-        }
+            //startCrawlerasync();
 
-        private static async Task startCrawlerasync()
-        {
-            try
+            //List<string> questionUrl = new List<string>();
+            //List<string> tags = Crawl_Helper.getTags();
+
+            //foreach (var item in tags)
+            //{
+            //    questionUrl=  Crawl_Helper.getQuestions(string.Format(Crawl_Helper.questionsUrl, item, "votes", 1, 50));
+
+            //    foreach (var itemquestion in questionUrl)
+            //    {
+            //        Console.WriteLine(itemquestion);
+            //    }
+
+            //}
+
+            //questionUrl = Crawl_Helper.getQuestions("https://stackoverflow.com/questions/tagged/c%23?tab=votes&pagesize=50");
+
+            //Crawl_Helper.getQuestionDetials("https://stackoverflow.com/questions/38187126/how-to-access-nested-div-based-on-class-name");
+
+            HtmlWeb web = new HtmlWeb();
+            HtmlDocument htmlDoc = web.Load("https://stackoverflow.com/questions/12859891/error-unable-to-access-the-iis-metabase?page=1&tab=votes#tab-top");
+            var node = htmlDoc.GetElementbyId("content");
+            foreach (HtmlNode node1 in node.SelectNodes("//*[@class=\"pager-answers\"]/span[contains(@class, 'page-number')]"))
             {
-                var url = "https://stackoverflow.com/";
-                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-                request.Method = "GET";
-                request.ContentType = "application/json";
-                WebResponse response = request.GetResponse();
-                var responseString = new
-                StreamReader(response.GetResponseStream()).ReadToEnd();
-
-                var htmlDocument = new HtmlDocument();
-                htmlDocument.LoadHtml(responseString);
-
-            }
-            catch (Exception ex)
-            {
-                Console.Write(ex);
+                Console.WriteLine(node1.InnerHtml);
             }
 
         }
     }
+
 }
