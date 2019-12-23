@@ -11,9 +11,7 @@ namespace crawl_next.Models
         public int Id { get; set; }
 
         public string url { get; set; }
-
-        public int page { get; set; }
-
+        
         public List<Document> documents { get; set; }
     }
 }

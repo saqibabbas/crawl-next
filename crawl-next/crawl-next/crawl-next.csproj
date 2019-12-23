@@ -113,6 +113,10 @@
     <Compile Include="Migrations\201912200408401_PrimaryDocument.designer.cs">
       <DependentUpon>201912200408401_PrimaryDocument.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201912211026299_pages_changes.cs" />
+    <Compile Include="Migrations\201912211026299_pages_changes.designer.cs">
+      <DependentUpon>201912211026299_pages_changes.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\Document.cs" />
     <Compile Include="Models\MainDocument.cs" />
@@ -152,6 +156,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201912200408401_PrimaryDocument.resx">
       <DependentUpon>201912200408401_PrimaryDocument.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201912211026299_pages_changes.resx">
+      <DependentUpon>201912211026299_pages_changes.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
