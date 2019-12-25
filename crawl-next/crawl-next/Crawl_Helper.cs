@@ -46,8 +46,8 @@ namespace crawl_next
         public static List<string> getQuestions(string tags)
         {
             HtmlWeb web = new HtmlWeb();
-            HtmlDocument htmlDoc = web.Load(tagsUrl);
-            var node = htmlDoc.GetElementbyId("tags-browser");
+            HtmlDocument htmlDoc = web.Load(tags);
+            var node = htmlDoc.GetElementbyId("mainbar");
             List<string> questionUrl = new List<string>();
 
             foreach (HtmlNode node1 in node.SelectNodes("//*[@class=\"question-summary\"]/div[contains(@class, 'summary')]/h3/a"))
@@ -61,44 +61,87 @@ namespace crawl_next
                 }
             }
 
+
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
             return questionUrl;
         }
 
         public static void getQuestionDetials(string url, int callstack = 0)
         {
-            if (!db.documents.Any(x => x.url == url) && callstack < 100)
+            if (!db.mainDocuments.Any(x => x.url == url) && callstack < 90)
             {
-                HtmlWeb web = new HtmlWeb();
-                HtmlDocument htmlDoc = web.Load(url);
-                HtmlNode node = htmlDoc.GetElementbyId("content");
-                htmlDoc = null;
-
-                List<int> pages = getPagination(node);
-
-                Console.WriteLine(" Going to get " + url);
-
-                db.documents.Add(new Models.Document() { url = url, html = node.OuterHtml });
-                db.SaveChanges();
-
-                foreach (HtmlNode node1 in node.SelectNodes("//a[@href]"))
+                HtmlNode node = null;
+                try
                 {
-                    if (node1.HasAttributes)
+                    HtmlWeb web = new HtmlWeb();
+                    HtmlDocument htmlDoc = web.Load(url);
+                    node = htmlDoc.GetElementbyId("content");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                    Console.WriteLine("At Url :" + url + " At callStack : " + callstack);
+                }
+                if (node != null)
+                {
+                    List<int> pages = getPagination(node);
+
+                    Models.MainDocument mainDocument = db.mainDocuments.Add(new Models.MainDocument { url = url });
+                    db.documents.Add(new Models.Document() { url = url, html = node.OuterHtml, mainDocument = mainDocument, page = 1 });
+                    db.SaveChanges();
+
+                    Console.WriteLine(" Going to get " + url);
+
+                    getPaginationData(pages, url, mainDocument.Id);
+
+                    foreach (HtmlNode node1 in node.SelectNodes("//a[@href]"))
                     {
-                        foreach (var nodeAtt in node1.Attributes.AttributesWithName("href"))
+                        if (node1.HasAttributes)
                         {
-                            if (r.IsMatch(nodeAtt.Value))
+                            foreach (var nodeAtt in node1.Attributes.AttributesWithName("href"))
                             {
-                                getQuestionDetials(baseUrl + r.Matches(nodeAtt.Value)[0], callstack++);
+                                if (r.IsMatch(nodeAtt.Value))
+                                {
+                                    getQuestionDetials(baseUrl + r.Matches(nodeAtt.Value)[0], callstack++);
+                                }
                             }
                         }
                     }
                 }
             }
+
+
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
         }
 
-        public static void getPaginationData()
+        /// <summary>
+        /// Get Paging data of document is paging is found
+        /// </summary>
+        /// <param name="pages"></param>
+        /// <param name="url"></param>
+        public static void getPaginationData(List<int> pages, string url, int mainDocumentId)
         {
+            foreach (var item in pages)
+            {
+                HtmlWeb web = new HtmlWeb();
+                string queryPart = string.Format("?page={0}&amp;tab=votes#tab-top", item.ToString());
+                HtmlDocument htmlDoc = web.Load(url + queryPart);
+                HtmlNode node = htmlDoc.GetElementbyId("content");
 
+                Console.WriteLine("Started geting pagination request");
+
+                db.documents.Add(new Models.Document() { url = url, html = node.OuterHtml, page = item, mainDocumentId = mainDocumentId });
+                db.SaveChanges();
+            }
+
+
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
         }
 
 
@@ -130,14 +173,23 @@ namespace crawl_next
         {
             List<int> paging = new List<int>();
             int pag = 0;
-            foreach (HtmlNode node1 in node.SelectNodes("//*[@class=\"pager-answers\"]/span[contains(@class, 'page-number')]"))
+
+            HtmlNodeCollection elements = node.SelectNodes("*//span[contains(@class, 'page-number')]");
+            if (elements != null)
             {
-                if (int.TryParse(node1.InnerText, out pag))
+                foreach (HtmlNode node1 in elements)
                 {
-                    paging.Add(pag);
+                    if (int.TryParse(node1.InnerText, out pag))
+                    {
+                        paging.Add(pag);
+                    }
                 }
+                paging = paging.Where(x => x > 1).Distinct().ToList();
             }
-            paging = paging.Where(x => x > 1).Distinct().ToList();
+
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
             return paging;
         }
     }

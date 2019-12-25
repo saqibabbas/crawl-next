@@ -9,7 +9,9 @@ namespace crawl_next.Models
         public string url { get; set; }
 
         public string html { get; set; }
-                
+
+        public int page { get; set; }
+
         public int? mainDocumentId { get; set; }
         
         [ForeignKey("mainDocumentId")]
